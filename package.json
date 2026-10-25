@@ -6,5 +6,16 @@
   "engines": {
     "node": ">=24 <25"
   },
-  "workspaces": ["apps/*", "tools/*", "packages/*"]
+  "workspaces": [
+    "apps/*",
+    "tools/*",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "prettier": "^3.9.10"
+  },
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  }
 }
