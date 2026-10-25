@@ -12,13 +12,18 @@
     "packages/*"
   ],
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "@types/node": "^24.19.2",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.9.10",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.0"
   },
   "scripts": {
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "tsc -b"
+    "typecheck": "tsc -b",
+    "lint": "eslint ."
   }
 }
