@@ -1,0 +1,8 @@
+{
+  "files": [],
+  "references": [
+    { "path": "apps/server" },
+    { "path": "tools/generator" },
+    { "path": "packages/shared" }
+  ]
+}

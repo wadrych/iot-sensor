@@ -12,10 +12,13 @@
     "packages/*"
   ],
   "devDependencies": {
-    "prettier": "^3.9.10"
+    "@types/node": "^24.19.2",
+    "prettier": "^3.9.10",
+    "typescript": "~6.0.3"
   },
   "scripts": {
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "typecheck": "tsc -b"
   }
 }
