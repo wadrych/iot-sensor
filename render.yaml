@@ -1,0 +1,19 @@
+# Render Blueprint
+services:
+  - type: web
+    name: iot-sensor
+    runtime: node
+    plan: free
+    region: frankfurt
+    branch: deploy
+    autoDeployTrigger: commit
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start -w apps/server
+    healthCheckPath: /api/health
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: HUSKY
+        value: '0'
+      - key: DATABASE_URL
+        sync: false
