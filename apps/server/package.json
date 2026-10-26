@@ -9,7 +9,7 @@
     "zod": "^4.6.7"
   },
   "scripts": {
-    "dev": "node --watch src/server.ts",
-    "start": "node dist/server.js"
+    "dev": "node --env-file-if-exists=../../.env --watch src/server.ts",
+    "start": "node --env-file-if-exists=../../.env dist/server.js"
   }
 }
