@@ -22,13 +22,16 @@
     "lint-staged": "^17.6.0",
     "prettier": "^3.9.10",
     "typescript": "~6.0.3",
-    "typescript-eslint": "^8.72.0"
+    "typescript-eslint": "^8.72.0",
+    "vitest": "^5.0.5"
   },
   "scripts": {
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "tsc -b",
+    "typecheck": "tsc -b --noEmit",
     "lint": "eslint .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "build": "tsc -b",
+    "test": "vitest run --passWithNoTests"
   }
 }
