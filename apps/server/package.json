@@ -3,5 +3,13 @@
   "private": true,
   "type": "module",
   "version": "1.0.0",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "fastify": "^5.12.7",
+    "zod": "^4.6.7"
+  },
+  "scripts": {
+    "dev": "node --watch src/server.ts",
+    "start": "node dist/server.js"
+  }
 }

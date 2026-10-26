@@ -3,6 +3,7 @@
   "references": [
     { "path": "apps/server" },
     { "path": "tools/generator" },
-    { "path": "packages/shared" }
+    { "path": "packages/shared" },
+    { "path": "apps/server/test" }
   ]
 }

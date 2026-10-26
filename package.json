@@ -28,10 +28,10 @@
   "scripts": {
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "tsc -b --noEmit",
+    "typecheck": "tsc -b",
     "lint": "eslint .",
     "prepare": "husky",
     "build": "tsc -b",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run"
   }
 }
