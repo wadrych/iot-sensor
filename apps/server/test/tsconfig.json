@@ -7,6 +7,6 @@
     "rewriteRelativeImportExtensions": false,
     "tsBuildInfoFile": "../dist/test.tsbuildinfo"
   },
-  "include": ["."],
+  "include": [".", "../drizzle.config.ts"],
   "references": [{ "path": ".." }]
 }
