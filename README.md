@@ -34,6 +34,8 @@ Requirements: Node.js 24 (see `.nvmrc`), npm 11, Docker with Docker Compose.
 npm ci                       # install dependencies and git hooks
 cp .env.example .env         # local configuration
 docker compose up -d         # start PostgreSQL on 127.0.0.1:5432
+npm run db:migrate -w apps/server   # create the database tables
+npm run db:seed -w apps/server      # create the admin account (first run only)
 npm run dev -w apps/server   # start the API with auto-reload
 ```
 
@@ -41,27 +43,32 @@ Then open http://localhost:3000/api/health – it should return `{"status":"ok"}
 
 ### Environment variables
 
-| Variable       | Required | Default     | Description                                                     |
-| -------------- | -------- | ----------- | --------------------------------------------------------------- |
-| `DATABASE_URL` | yes      | –           | PostgreSQL connection string (`postgres://` or `postgresql://`) |
-| `HOST`         | no       | `127.0.0.1` | Interface the server binds to (`0.0.0.0` on Render)             |
-| `PORT`         | no       | `3000`      | HTTP port (set automatically by Render)                         |
+| Variable         | Required  | Default     | Description                                                     |
+| ---------------- | --------- | ----------- | --------------------------------------------------------------- |
+| `DATABASE_URL`   | yes       | –           | PostgreSQL connection string (`postgres://` or `postgresql://`) |
+| `HOST`           | no        | `127.0.0.1` | Interface the server binds to (`0.0.0.0` on Render)             |
+| `PORT`           | no        | `3000`      | HTTP port (set automatically by Render)                         |
+| `ADMIN_USERNAME` | seed only | –           | Username of the admin created by `db:seed`                      |
+| `ADMIN_PASSWORD` | seed only | –           | Initial admin password (min. 8 characters)                      |
 
-The server validates these at startup and exits with an error if any is invalid.
+The server validates these at startup and exits with an error if any is invalid. `db:seed` creates the admin only when the `users` table is empty, so it never overwrites a changed password.
 
 ## Scripts
 
 Run from the repository root:
 
-| Command                                   | Purpose                                              |
-| ----------------------------------------- | ---------------------------------------------------- |
-| `npm run dev -w apps/server`              | Run the API from TypeScript sources with auto-reload |
-| `npm run build`                           | Compile all packages (`tsc -b`)                      |
-| `npm start -w apps/server`                | Run the compiled API from `apps/server/dist`         |
-| `npm test`                                | Run tests (Vitest)                                   |
-| `npm run lint`                            | Lint with ESLint                                     |
-| `npm run typecheck`                       | Type-check all projects                              |
-| `npm run format` / `npm run format:check` | Format / check formatting with Prettier              |
+| Command                                   | Purpose                                                       |
+| ----------------------------------------- | ------------------------------------------------------------- |
+| `npm run dev -w apps/server`              | Run the API from TypeScript sources with auto-reload          |
+| `npm run build`                           | Compile all packages (`tsc -b`)                               |
+| `npm start -w apps/server`                | Run the compiled API from `apps/server/dist`                  |
+| `npm test`                                | Run tests (Vitest; Docker must be running for database tests) |
+| `npm run db:generate -w apps/server`      | Generate a SQL migration from `src/db/schema.ts`              |
+| `npm run db:migrate -w apps/server`       | Apply pending migrations to `DATABASE_URL`                    |
+| `npm run db:seed -w apps/server`          | Create the admin account if no user exists                    |
+| `npm run lint`                            | Lint with ESLint                                              |
+| `npm run typecheck`                       | Type-check all projects                                       |
+| `npm run format` / `npm run format:check` | Format / check formatting with Prettier                       |
 
 ## Deployment
 
