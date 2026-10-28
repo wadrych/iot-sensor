@@ -7,7 +7,7 @@ services:
     region: frankfurt
     branch: deploy
     autoDeployTrigger: commit
-    buildCommand: npm ci --include=dev && npm run build
+    buildCommand: npm ci --include=dev && npm run build && npm run db:migrate -w apps/server
     startCommand: npm start -w apps/server
     healthCheckPath: /api/health
     envVars:
