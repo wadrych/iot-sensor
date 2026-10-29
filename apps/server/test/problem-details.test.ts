@@ -2,10 +2,11 @@ import { problemSchema } from '@iot-sensor/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { buildApp } from '../src/app.ts';
+import { noDbDeps } from './helpers/app.ts';
 import { HttpError } from '../src/http-error.ts';
 
 describe('Problem Details error handling', () => {
-  const app = buildApp();
+  const app = buildApp(noDbDeps());
 
   beforeAll(async () => {
     app.get('/test/http-error', () => {
