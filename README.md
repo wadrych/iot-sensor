@@ -24,6 +24,7 @@ apps/server/       Fastify API (src/, test/)
 apps/web/          React SPA (planned)
 tools/generator/   sensor emulator CLI (planned)
 packages/shared/   shared Zod schemas and types
+docs/              database schema (ERD)
 ```
 
 ## Local setup
