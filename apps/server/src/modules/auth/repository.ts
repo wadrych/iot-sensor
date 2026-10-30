@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, and, gt, sql } from 'drizzle-orm';
 import type { Db } from '../../db/client.ts';
 import { sessions, users } from '../../db/schema.ts';
 
@@ -16,4 +16,18 @@ export async function createSession(
   session: { userId: number; tokenHash: string; expiresAt: Date },
 ): Promise<void> {
   await db.insert(sessions).values(session);
+}
+
+export async function findActiveSession(db: Db, tokenHash: string) {
+  const [session] = await db
+    .select({ id: sessions.id, userId: sessions.userId })
+    .from(sessions)
+    .where(
+      and(
+        eq(sessions.tokenHash, tokenHash),
+        gt(sessions.expiresAt, sql`now()`),
+      ),
+    )
+    .limit(1);
+  return session;
 }

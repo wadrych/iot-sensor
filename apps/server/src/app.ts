@@ -9,6 +9,7 @@ import type { Db } from './db/client.ts';
 import { healthRoutes } from './modules/health/routes.ts';
 import { authRoutes } from './modules/auth/routes.ts';
 import { problemDetails } from './plugins/problem-details.ts';
+import { authentication } from './modules/auth/authenticate.ts';
 
 export interface AppDeps {
   db: Db;
@@ -20,6 +21,7 @@ export function buildApp(deps: AppDeps, opts: FastifyServerOptions = {}) {
   app.setSerializerCompiler(serializerCompiler);
   problemDetails(app);
   app.register(cookie);
+  authentication(app);
   app.register(healthRoutes);
   app.register(authRoutes, deps);
   return app;
