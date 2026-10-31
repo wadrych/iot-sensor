@@ -31,3 +31,7 @@ export async function findActiveSession(db: Db, tokenHash: string) {
     .limit(1);
   return session;
 }
+
+export async function deleteSession(db: Db, sessionId: number): Promise<void> {
+  await db.delete(sessions).where(eq(sessions.id, sessionId));
+}
