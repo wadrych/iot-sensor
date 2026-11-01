@@ -5,8 +5,12 @@ import {
   createSession,
   findUserByUsername,
   deleteSession,
+  findPasswordHash,
+  updatePasswordAndRevokeOtherSessions,
 } from './repository.ts';
 import { generateSessionToken, hashToken } from './tokens.ts';
+import { NEW_PASSWORD_MIN_LENGTH } from '@iot-sensor/shared';
+import type { AuthContext } from './authenticate.ts';
 
 export const SESSION_TTL_SECONDS = 60 * 60 * 8;
 
@@ -40,4 +44,34 @@ export async function login(
 
 export async function logout(db: Db, sessionId: number): Promise<void> {
   await deleteSession(db, sessionId);
+}
+
+export async function changePassword(
+  db: Db,
+  auth: AuthContext,
+  currentPassword: string,
+  newPassword: string,
+): Promise<void> {
+  const passwordHash = await findPasswordHash(db, auth.userId);
+  if (
+    passwordHash === undefined ||
+    !(await verifyPassword(passwordHash, currentPassword))
+  ) {
+    throw new HttpError(403, 'Current password is incorrect');
+  }
+  if (newPassword.length < NEW_PASSWORD_MIN_LENGTH) {
+    throw new HttpError(422, `New password is too short`, [
+      {
+        field: 'newPassword',
+        message: `New password must be at least ${String(NEW_PASSWORD_MIN_LENGTH)} characters long`,
+      },
+    ]);
+  }
+
+  await updatePasswordAndRevokeOtherSessions(
+    db,
+    auth.userId,
+    await hashPassword(newPassword),
+    auth.sessionId,
+  );
 }

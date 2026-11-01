@@ -1,7 +1,11 @@
-import { loginRequestSchema, loginResponseSchema } from '@iot-sensor/shared';
+import {
+  loginRequestSchema,
+  loginResponseSchema,
+  passwordChangeSchema,
+} from '@iot-sensor/shared';
 import type { App, AppDeps } from '../../app.ts';
 import { getAuth, requireAuth, SESSION_COOKIE } from './authenticate.ts';
-import { login, logout } from './service.ts';
+import { login, logout, changePassword } from './service.ts';
 
 const SESSION_COOKIE_OPTIONS = {
   httpOnly: true,
@@ -33,18 +37,32 @@ export function authRoutes(app: App, { db }: AppDeps): void {
   app.get(
     '/api/auth/session',
     {
-      preHandler: requireAuth(db),
+      onRequest: requireAuth(db),
     },
     (_request, reply) => reply.code(204).send(),
   );
   app.post(
     '/api/auth/logout',
     {
-      preHandler: requireAuth(db),
+      onRequest: requireAuth(db),
     },
     async (request, reply) => {
       await logout(db, getAuth(request).sessionId);
       reply.clearCookie(SESSION_COOKIE, SESSION_COOKIE_OPTIONS);
+      return reply.code(204).send();
+    },
+  );
+  app.put(
+    '/api/auth/password',
+    {
+      onRequest: requireAuth(db),
+      schema: {
+        body: passwordChangeSchema,
+      },
+    },
+    async (request, reply) => {
+      const { currentPassword, newPassword } = request.body;
+      await changePassword(db, getAuth(request), currentPassword, newPassword);
       return reply.code(204).send();
     },
   );
