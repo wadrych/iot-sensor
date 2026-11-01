@@ -22,4 +22,4 @@ services:
       - key: ADMIN_PASSWORD
         sync: false
       - key: TRUST_PROXY
-        value: uniquelocal
+        value: loopback,uniquelocal
