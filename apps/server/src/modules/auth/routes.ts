@@ -14,10 +14,16 @@ const SESSION_COOKIE_OPTIONS = {
   path: '/api',
 } as const;
 
+export const LOGIN_RATE_LIMIT = {
+  max: 20,
+  timeWindow: '1 minute',
+};
+
 export function authRoutes(app: App, { db }: AppDeps): void {
   app.post(
     '/api/auth/login',
     {
+      config: { rateLimit: LOGIN_RATE_LIMIT },
       schema: {
         body: loginRequestSchema,
         response: { 200: loginResponseSchema },

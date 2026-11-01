@@ -10,6 +10,7 @@ import { healthRoutes } from './modules/health/routes.ts';
 import { authRoutes } from './modules/auth/routes.ts';
 import { problemDetails } from './plugins/problem-details.ts';
 import { authentication } from './modules/auth/authenticate.ts';
+import rateLimit from '@fastify/rate-limit';
 
 export interface AppDeps {
   db: Db;
@@ -22,6 +23,12 @@ export function buildApp(deps: AppDeps, opts: FastifyServerOptions = {}) {
   problemDetails(app);
   app.register(cookie);
   authentication(app);
+  app.register(rateLimit, {
+    global: false,
+    onExceeded: (request, key) => {
+      request.log.warn({ key, ips: request.ips }, 'Rate limit exceeded');
+    },
+  });
   app.register(healthRoutes);
   app.register(authRoutes, deps);
   return app;

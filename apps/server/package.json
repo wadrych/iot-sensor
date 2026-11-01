@@ -6,6 +6,7 @@
   "license": "MIT",
   "dependencies": {
     "@fastify/cookie": "^11.1.5",
+    "@fastify/rate-limit": "^11.2.1",
     "@iot-sensor/shared": "^1.0.0",
     "argon2": "^0.45.1",
     "drizzle-orm": "^0.45.4",

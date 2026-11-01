@@ -51,6 +51,7 @@ Then open http://localhost:3000/api/health – it should return `{"status":"ok"}
 | `PORT`           | no        | `3000`      | HTTP port (set automatically by Render)                         |
 | `ADMIN_USERNAME` | seed only | –           | Username of the admin created by `db:seed`                      |
 | `ADMIN_PASSWORD` | seed only | –           | Initial admin password (min. 8 characters)                      |
+| `TRUST_PROXY`    | no        | –           | Reverse-proxy addresses headers are trusted                     |
 
 The server validates these at startup and exits with an error if any is invalid. `db:seed` creates the admin only when the `users` table is empty, so it never overwrites a changed password.
 
