@@ -47,3 +47,12 @@ export async function revokeSensor(db: Db, id: number): Promise<boolean> {
     .returning({ id: sensors.id });
   return revoked.length > 0;
 }
+
+export async function findActiveSensorByKeyHash(db: Db, keyHash: string) {
+  const [row] = await db
+    .select({ id: sensors.id, seriesId: sensors.seriesId })
+    .from(sensors)
+    .where(and(eq(sensors.keyHash, keyHash), isNull(sensors.revokedAt)))
+    .limit(1);
+  return row;
+}

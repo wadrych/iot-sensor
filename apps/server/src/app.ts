@@ -12,7 +12,9 @@ import { seriesRoutes } from './modules/series/routes.ts';
 import { sensorRoutes } from './modules/sensors/routes.ts';
 import { problemDetails } from './plugins/problem-details.ts';
 import { authentication } from './modules/auth/authenticate.ts';
+import { measurementRoutes } from './modules/measurements/routes.ts';
 import rateLimit from '@fastify/rate-limit';
+import { sensorAuthentication } from './modules/sensors/authenticate.ts';
 
 export interface AppDeps {
   db: Db;
@@ -25,6 +27,7 @@ export function buildApp(deps: AppDeps, opts: FastifyServerOptions = {}) {
   problemDetails(app);
   app.register(cookie);
   authentication(app);
+  sensorAuthentication(app);
   app.register(rateLimit, {
     global: false,
     onExceeded: (request, key) => {
@@ -35,6 +38,7 @@ export function buildApp(deps: AppDeps, opts: FastifyServerOptions = {}) {
   app.register(authRoutes, deps);
   app.register(seriesRoutes, deps);
   app.register(sensorRoutes, deps);
+  app.register(measurementRoutes, deps);
   return app;
 }
 
