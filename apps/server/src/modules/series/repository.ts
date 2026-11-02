@@ -1,6 +1,6 @@
-import { asc, eq } from 'drizzle-orm';
-import type { Db } from '../../db/client.ts';
-import { series } from '../../db/schema.ts';
+import { asc, eq, and, gt, lt, or } from 'drizzle-orm';
+import type { Db, Queryable } from '../../db/client.ts';
+import { series, measurements } from '../../db/schema.ts';
 
 export interface NewSeries {
   name: string;
@@ -38,6 +38,47 @@ export async function insertSeries(db: Db, newSeries: NewSeries) {
   const [row] = await db
     .insert(series)
     .values(newSeries)
+    .returning(seriesColumns);
+  return row;
+}
+
+export async function lockSeries(tx: Queryable, id: number) {
+  const [row] = await tx
+    .select({ id: series.id })
+    .from(series)
+    .where(eq(series.id, id))
+    .for('update');
+  return row;
+}
+
+export async function hasMeasurmentOutside(
+  tx: Queryable,
+  seriesId: number,
+  minValue: number,
+  maxValue: number,
+): Promise<boolean> {
+  const [row] = await tx
+    .select({ id: measurements.id })
+    .from(measurements)
+    .where(
+      and(
+        eq(measurements.seriesId, seriesId),
+        or(lt(measurements.value, minValue), gt(measurements.value, maxValue)),
+      ),
+    )
+    .limit(1);
+  return row !== undefined;
+}
+
+export async function updateSeries(
+  tx: Queryable,
+  id: number,
+  values: NewSeries,
+) {
+  const [row] = await tx
+    .update(series)
+    .set(values)
+    .where(eq(series.id, id))
     .returning(seriesColumns);
   return row;
 }

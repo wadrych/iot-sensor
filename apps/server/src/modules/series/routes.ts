@@ -3,7 +3,12 @@ import { z } from 'zod';
 import type { App, AppDeps } from '../../app.ts';
 import { requireAuth } from '../auth/authenticate.ts';
 import { parseId } from '../../path-id.ts';
-import { createSeries, getAllSeries, getSeries } from './service.ts';
+import {
+  createSeries,
+  getAllSeries,
+  getSeries,
+  replaceSeries,
+} from './service.ts';
 
 const seriesParams = z.object({ seriesId: z.string() });
 
@@ -31,5 +36,22 @@ export function seriesRoutes(app: App, { db }: AppDeps): void {
         .header('location', `/api/series/${String(created.id)}`)
         .send(created);
     },
+  );
+  app.put(
+    '/api/series/:seriesId',
+    {
+      onRequest: requireAuth(db),
+      schema: {
+        params: seriesParams,
+        body: seriesInputSchema,
+        response: { 200: seriesSchema },
+      },
+    },
+    (request) =>
+      replaceSeries(
+        db,
+        parseId(request.params.seriesId, 'Series'),
+        request.body,
+      ),
   );
 }

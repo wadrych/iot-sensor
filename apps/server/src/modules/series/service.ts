@@ -6,6 +6,9 @@ import {
   findSeries,
   listSeries,
   insertSeries,
+  hasMeasurmentOutside,
+  lockSeries,
+  updateSeries,
   type NewSeries,
 } from './repository.ts';
 import { HttpError } from '../../http-error.ts';
@@ -65,6 +68,37 @@ export async function createSeries(
     const row = await insertSeries(db, values);
     if (!row) throw new Error('Insert failed');
     return row;
+  } catch (error) {
+    if (isUniqueViolation(error, 'series_name_unique')) {
+      throw duplicateName();
+    }
+    throw error;
+  }
+}
+
+export async function replaceSeries(
+  db: Db,
+  id: number,
+  input: SeriesInput,
+): Promise<Series> {
+  const values = checkSeriesRules(input);
+  try {
+    return await db.transaction(async (tx) => {
+      if (!(await lockSeries(tx, id))) {
+        throw new HttpError(404, 'Series not found');
+      }
+      if (
+        await hasMeasurmentOutside(tx, id, values.minValue, values.maxValue)
+      ) {
+        throw new HttpError(
+          409,
+          'Series has measurements outside the specified range',
+        );
+      }
+      const row = await updateSeries(tx, id, values);
+      if (!row) throw new Error('Update failed');
+      return row;
+    });
   } catch (error) {
     if (isUniqueViolation(error, 'series_name_unique')) {
       throw duplicateName();
