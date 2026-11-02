@@ -9,6 +9,7 @@ import type { Db } from './db/client.ts';
 import { healthRoutes } from './modules/health/routes.ts';
 import { authRoutes } from './modules/auth/routes.ts';
 import { seriesRoutes } from './modules/series/routes.ts';
+import { sensorRoutes } from './modules/sensors/routes.ts';
 import { problemDetails } from './plugins/problem-details.ts';
 import { authentication } from './modules/auth/authenticate.ts';
 import rateLimit from '@fastify/rate-limit';
@@ -33,6 +34,7 @@ export function buildApp(deps: AppDeps, opts: FastifyServerOptions = {}) {
   app.register(healthRoutes);
   app.register(authRoutes, deps);
   app.register(seriesRoutes, deps);
+  app.register(sensorRoutes, deps);
   return app;
 }
 
