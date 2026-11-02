@@ -1,8 +1,8 @@
-import type { SensorCreated, SensorInput } from '@iot-sensor/shared';
+import type { Sensor, SensorCreated, SensorInput } from '@iot-sensor/shared';
 import type { Db } from '../../db/client.ts';
 import { isForeignKeyViolation, isUniqueViolation } from '../../db/errors.ts';
 import { HttpError } from '../../http-error.ts';
-import { insertSensor } from './repository.ts';
+import { findSensor, insertSensor, listSensors } from './repository.ts';
 import { hashToken } from '../auth/tokens.ts';
 import { generateApiKey } from './api-key.ts';
 import { MAX_DB_INTEGER } from '../../path-id.ts';
@@ -44,4 +44,31 @@ export async function registerSensor(
     }
     throw error;
   }
+}
+
+interface SensorRow {
+  id: number;
+  name: string;
+  seriesId: number;
+  createdAt: Date;
+  lastMeasurementAt: Date | null;
+}
+
+function toSensor(row: SensorRow): Sensor {
+  return {
+    ...row,
+    createdAt: row.createdAt.toISOString(),
+    lastMeasurementAt: row.lastMeasurementAt?.toISOString() ?? null,
+  };
+}
+
+export async function getAllSensors(db: Db): Promise<Sensor[]> {
+  const rows = await listSensors(db);
+  return rows.map(toSensor);
+}
+
+export async function getSensor(db: Db, id: number): Promise<Sensor> {
+  const row = await findSensor(db, id);
+  if (!row) throw new HttpError(404, 'Sensor not found');
+  return toSensor(row);
 }
