@@ -9,6 +9,7 @@ import {
   hasMeasurmentOutside,
   lockSeries,
   updateSeries,
+  deleteSeries,
   type NewSeries,
 } from './repository.ts';
 import { HttpError } from '../../http-error.ts';
@@ -104,5 +105,11 @@ export async function replaceSeries(
       throw duplicateName();
     }
     throw error;
+  }
+}
+
+export async function removeSeries(db: Db, id: number): Promise<void> {
+  if (!(await deleteSeries(db, id))) {
+    throw new HttpError(404, 'Series not found');
   }
 }

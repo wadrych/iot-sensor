@@ -82,3 +82,11 @@ export async function updateSeries(
     .returning(seriesColumns);
   return row;
 }
+
+export async function deleteSeries(db: Db, id: number): Promise<boolean> {
+  const deleted = await db
+    .delete(series)
+    .where(eq(series.id, id))
+    .returning({ id: series.id });
+  return deleted.length > 0;
+}

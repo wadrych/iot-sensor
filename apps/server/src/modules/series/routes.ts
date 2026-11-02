@@ -8,6 +8,7 @@ import {
   getAllSeries,
   getSeries,
   replaceSeries,
+  removeSeries,
 } from './service.ts';
 
 const seriesParams = z.object({ seriesId: z.string() });
@@ -53,5 +54,16 @@ export function seriesRoutes(app: App, { db }: AppDeps): void {
         parseId(request.params.seriesId, 'Series'),
         request.body,
       ),
+  );
+  app.delete(
+    '/api/series/:seriesId',
+    {
+      onRequest: requireAuth(db),
+      schema: { params: seriesParams },
+    },
+    async (request, reply) => {
+      await removeSeries(db, parseId(request.params.seriesId, 'Series'));
+      return reply.code(204).send();
+    },
   );
 }
