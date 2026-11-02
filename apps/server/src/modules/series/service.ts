@@ -1,6 +1,13 @@
-import type { Series } from '@iot-sensor/shared';
+import type { Series, FieldError, SeriesInput } from '@iot-sensor/shared';
 import type { Db } from '../../db/client.ts';
-import { findSeries, listSeries } from './repository.ts';
+import { isUniqueViolation } from '../../db/errors.ts';
+import { POINT_STYLES } from '../../db/schema.ts';
+import {
+  findSeries,
+  listSeries,
+  insertSeries,
+  type NewSeries,
+} from './repository.ts';
 import { HttpError } from '../../http-error.ts';
 
 export function getAllSeries(db: Db): Promise<Series[]> {
@@ -13,4 +20,55 @@ export async function getSeries(db: Db, id: number): Promise<Series> {
     throw new HttpError(404, 'Series not found');
   }
   return row;
+}
+
+function checkSeriesRules(input: SeriesInput): NewSeries {
+  const errors: FieldError[] = [];
+  if (input.minValue >= input.maxValue) {
+    errors.push({
+      field: 'minValue',
+      message: 'Min value must be less than max value',
+    });
+  }
+  const icon = input.icon ?? null;
+  if (icon !== null && !(POINT_STYLES as readonly string[]).includes(icon)) {
+    errors.push({
+      field: 'icon',
+      message: `Must be one of: ${POINT_STYLES.join(', ')}`,
+    });
+  }
+  if (errors.length > 0) {
+    throw new HttpError(422, 'Series rules violated', errors);
+  }
+  return {
+    name: input.name,
+    minValue: input.minValue,
+    maxValue: input.maxValue,
+    color: input.color,
+    icon,
+    unit: input.unit ?? null,
+  };
+}
+
+function duplicateName(): HttpError {
+  return new HttpError(422, 'Series with this name already exists', [
+    { field: 'name', message: 'Series with this name already exists' },
+  ]);
+}
+
+export async function createSeries(
+  db: Db,
+  input: SeriesInput,
+): Promise<Series> {
+  const values = checkSeriesRules(input);
+  try {
+    const row = await insertSeries(db, values);
+    if (!row) throw new Error('Insert failed');
+    return row;
+  } catch (error) {
+    if (isUniqueViolation(error, 'series_name_unique')) {
+      throw duplicateName();
+    }
+    throw error;
+  }
 }
