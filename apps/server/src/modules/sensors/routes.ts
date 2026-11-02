@@ -3,7 +3,12 @@ import {
   sensorInputSchema,
   sensorSchema,
 } from '@iot-sensor/shared';
-import { getAllSensors, getSensor, registerSensor } from './service.ts';
+import {
+  getAllSensors,
+  getSensor,
+  registerSensor,
+  unregisterSensor,
+} from './service.ts';
 import { z } from 'zod';
 import type { App, AppDeps } from '../../app.ts';
 import { requireAuth } from '../auth/authenticate.ts';
@@ -50,6 +55,19 @@ export function sensorRoutes(app: App, { db }: AppDeps): void {
         .code(201)
         .header('location', `/api/sensors/${String(created.id)}`)
         .send(created);
+    },
+  );
+  app.delete(
+    '/api/sensors/:sensorId',
+    {
+      onRequest: requireAuth(db),
+      schema: {
+        params: sensorParams,
+      },
+    },
+    async (request, reply) => {
+      await unregisterSensor(db, parseId(request.params.sensorId, 'Sensor'));
+      return reply.code(204).send();
     },
   );
 }

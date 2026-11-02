@@ -1,4 +1,4 @@
-import { isNull, type SQL, eq, and, max, asc } from 'drizzle-orm';
+import { isNull, type SQL, eq, and, max, asc, sql } from 'drizzle-orm';
 import type { Db } from '../../db/client.ts';
 import { measurements, sensors } from '../../db/schema.ts';
 
@@ -37,4 +37,13 @@ export function listSensors(db: Db) {
 export async function findSensor(db: Db, id: number) {
   const [row] = await selectActiveSensors(db, eq(sensors.id, id));
   return row;
+}
+
+export async function revokeSensor(db: Db, id: number): Promise<boolean> {
+  const revoked = await db
+    .update(sensors)
+    .set({ revokedAt: sql`now()` })
+    .where(and(eq(sensors.id, id), isNull(sensors.revokedAt)))
+    .returning({ id: sensors.id });
+  return revoked.length > 0;
 }
