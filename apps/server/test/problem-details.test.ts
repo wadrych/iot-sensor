@@ -77,6 +77,16 @@ describe('Problem Details error handling', () => {
     expectProblem(res, 400);
   });
 
+  it('returns 415 for a text/plain body', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/test/validated',
+      headers: { 'content-type': 'text/plain' },
+      payload: 'name=x',
+    });
+    expectProblem(res, 415);
+  });
+
   it('returns 404 for uknonw route', async () => {
     const res = await app.inject({
       method: 'GET',

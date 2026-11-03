@@ -15,6 +15,7 @@ import { authentication } from './modules/auth/authenticate.ts';
 import { measurementRoutes } from './modules/measurements/routes.ts';
 import rateLimit from '@fastify/rate-limit';
 import { sensorAuthentication } from './modules/sensors/authenticate.ts';
+import { contentNegotiation } from './plugins/content-negotiation.ts';
 
 export interface AppDeps {
   db: Db;
@@ -25,6 +26,7 @@ export function buildApp(deps: AppDeps, opts: FastifyServerOptions = {}) {
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
   problemDetails(app);
+  contentNegotiation(app);
   app.register(cookie);
   authentication(app);
   sensorAuthentication(app);

@@ -175,6 +175,19 @@ describe('POST /api/measurements', () => {
     expect((await send(body)).statusCode).toBe(400);
   });
 
+  it('returns 415 for a text/plain body with a valid key', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/measurements',
+      headers: { 'x-api-key': apiKey, 'content-type': 'text/plain' },
+      payload: 'value=1',
+    });
+
+    expect(res.statusCode).toBe(415);
+    expect(res.headers['content-type']).toMatch(/^application\/problem\+json/);
+    expect(await stored()).toHaveLength(0);
+  });
+
   it.each([
     ['without a key', {}],
     ['with a wrong key', { 'x-api-key': 'x'.repeat(40) }],
