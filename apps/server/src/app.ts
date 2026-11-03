@@ -16,6 +16,7 @@ import { measurementRoutes } from './modules/measurements/routes.ts';
 import rateLimit from '@fastify/rate-limit';
 import { sensorAuthentication } from './modules/sensors/authenticate.ts';
 import { contentNegotiation } from './plugins/content-negotiation.ts';
+import { securityHeaders } from './plugins/security-headers.ts';
 
 export interface AppDeps {
   db: Db;
@@ -25,6 +26,7 @@ export function buildApp(deps: AppDeps, opts: FastifyServerOptions = {}) {
   const app = Fastify(opts).withTypeProvider<ZodTypeProvider>();
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
+  securityHeaders(app);
   problemDetails(app);
   contentNegotiation(app);
   app.register(cookie);
