@@ -4,6 +4,7 @@ import { hasZodFastifySchemaValidationErrors } from 'fastify-type-provider-zod';
 import { STATUS_CODES } from 'node:http';
 import type { App } from '../app.ts';
 import { HttpError } from '../http-error.ts';
+import { DrizzleQueryError } from 'drizzle-orm';
 
 function sendProblem(
   reply: FastifyReply,
@@ -46,7 +47,14 @@ export function problemDetails(app: App): void {
       return sendProblem(reply, status, detail);
     }
 
-    request.log.error({ err: error }, 'unhandled error');
+    if (error instanceof DrizzleQueryError) {
+      request.log.error(
+        { err: error.cause, query: error.query },
+        'unhandled error',
+      );
+    } else {
+      request.log.error({ err: error }, 'unhandled error');
+    }
     return sendProblem(reply, 500);
   });
 

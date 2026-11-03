@@ -1,4 +1,5 @@
 import { problemSchema } from '@iot-sensor/shared';
+import { DrizzleQueryError } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { buildApp } from '../src/app.ts';
@@ -112,5 +113,35 @@ describe('Problem Details error handling', () => {
       url: '/test/bad-response',
     });
     expectProblem(res, 500);
+  });
+});
+
+describe('unexpected database errors', () => {
+  const logs: string[] = [];
+  const app = buildApp(noDbDeps(), {
+    logger: { stream: { write: (line: string) => logs.push(line) } },
+  });
+
+  beforeAll(async () => {
+    app.get('/test/db-crash', () => {
+      throw new DrizzleQueryError(
+        'update users set password_hash = $1',
+        ['$argon2id$secret-hash'],
+        new Error('connection terminated'),
+      );
+    });
+    await app.ready();
+  });
+
+  afterAll(() => app.close());
+
+  it('logs the driver error and query without the parameters', async () => {
+    const res = await app.inject({ method: 'GET', url: '/test/db-crash' });
+
+    expect(res.statusCode).toBe(500);
+    const log = logs.join('');
+    expect(log).toContain('connection terminated');
+    expect(log).toContain('update users set password_hash = $1');
+    expect(log).not.toContain('secret-hash');
   });
 });
