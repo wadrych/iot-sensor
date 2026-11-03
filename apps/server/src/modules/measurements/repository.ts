@@ -66,3 +66,12 @@ export async function listMeasurements(
     .orderBy(order(measurements.timestamp), order(measurements.id))
     .limit(filter.limit);
 }
+
+export async function findMeasurement(db: Queryable, id: number) {
+  const [row] = await db
+    .select(measurementColumns)
+    .from(measurements)
+    .where(eq(measurements.id, id))
+    .limit(1);
+  return row;
+}

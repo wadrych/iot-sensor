@@ -3,6 +3,7 @@ import type { SensorContext } from '../sensors/authenticate.ts';
 import type { Db } from '../../db/client.ts';
 import { HttpError } from '../../http-error.ts';
 import {
+  findMeasurement,
   insertMeasurement,
   listMeasurements,
   lockSeriesRange,
@@ -68,4 +69,12 @@ export async function getMeasurements(
 ): Promise<Measurement[]> {
   const rows = await listMeasurements(db, filter);
   return rows.map(toMeasurement);
+}
+
+export async function getMeasurement(db: Db, id: number): Promise<Measurement> {
+  const row = await findMeasurement(db, id);
+  if (!row) {
+    throw new HttpError(404, 'Measurement not found');
+  }
+  return toMeasurement(row);
 }

@@ -3,11 +3,15 @@ import {
   measurementSchema,
   type Measurement,
 } from '@iot-sensor/shared';
+import { HttpError } from '../../http-error.ts';
 import type { App, AppDeps } from '../../app.ts';
 import { getSensorAuth, requireApiKey } from '../sensors/authenticate.ts';
-import { getMeasurements, recordMeasurement } from './service.ts';
-import { HttpError } from '../../http-error.ts';
-import { MAX_DB_INTEGER } from '../../path-id.ts';
+import {
+  getMeasurement,
+  getMeasurements,
+  recordMeasurement,
+} from './service.ts';
+import { MAX_DB_INTEGER, parseId } from '../../path-id.ts';
 import { z } from 'zod';
 
 const isoDate = z.iso
@@ -25,6 +29,10 @@ const measurementQuery = z.object({
   to: isoDate.optional(),
   sort: z.enum(['timestamp', '-timestamp']).default('timestamp'),
   limit: z.coerce.number().int().min(1).max(10_000).default(1000),
+});
+
+const measurementParams = z.object({
+  measurementId: z.string(),
 });
 
 export function measurementRoutes(app: App, { db }: AppDeps): void {
@@ -47,6 +55,27 @@ export function measurementRoutes(app: App, { db }: AppDeps): void {
       });
     },
   );
+  app.get(
+    '/api/measurements/:measurementId',
+    {
+      schema: {
+        params: measurementParams,
+        response: { 200: measurementSchema },
+      },
+    },
+    (request) =>
+      getMeasurement(db, parseId(request.params.measurementId, 'Measurement')),
+  );
+
+  app.route({
+    method: ['PUT', 'PATCH', 'DELETE'],
+    url: '/api/measurements/:measurementId',
+    handler: (_request, reply) => {
+      reply.header('allow', 'GET, HEAD');
+      throw new HttpError(405, 'Method Not Allowed');
+    },
+  });
+
   app.post(
     '/api/measurements',
     {
