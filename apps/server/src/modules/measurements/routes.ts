@@ -5,10 +5,48 @@ import {
 } from '@iot-sensor/shared';
 import type { App, AppDeps } from '../../app.ts';
 import { getSensorAuth, requireApiKey } from '../sensors/authenticate.ts';
-import { recordMeasurement } from './service.ts';
+import { getMeasurements, recordMeasurement } from './service.ts';
 import { HttpError } from '../../http-error.ts';
+import { MAX_DB_INTEGER } from '../../path-id.ts';
+import { z } from 'zod';
+
+const isoDate = z.iso
+  .datetime({ offset: true })
+  .transform((value) => new Date(value));
+
+const measurementQuery = z.object({
+  series: z
+    .string()
+    .regex(/^\d+(,\d+)*$/)
+    .transform((list) => list.split(',').map(Number))
+    .pipe(z.array(z.int().min(1).max(MAX_DB_INTEGER)))
+    .optional(),
+  from: isoDate.optional(),
+  to: isoDate.optional(),
+  sort: z.enum(['timestamp', '-timestamp']).default('timestamp'),
+  limit: z.coerce.number().int().min(1).max(10_000).default(1000),
+});
 
 export function measurementRoutes(app: App, { db }: AppDeps): void {
+  app.get(
+    '/api/measurements',
+    {
+      schema: {
+        querystring: measurementQuery,
+        response: { 200: z.array(measurementSchema) },
+      },
+    },
+    (request) => {
+      const { series, from, to, sort, limit } = request.query;
+      return getMeasurements(db, {
+        seriesIds: series,
+        from,
+        to,
+        descending: sort === '-timestamp',
+        limit,
+      });
+    },
+  );
   app.post(
     '/api/measurements',
     {

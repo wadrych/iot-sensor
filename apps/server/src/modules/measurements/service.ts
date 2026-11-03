@@ -2,9 +2,26 @@ import type { Measurement, MeasurementInput } from '@iot-sensor/shared';
 import type { SensorContext } from '../sensors/authenticate.ts';
 import type { Db } from '../../db/client.ts';
 import { HttpError } from '../../http-error.ts';
-import { insertMeasurement, lockSeriesRange } from './repository.ts';
+import {
+  insertMeasurement,
+  listMeasurements,
+  lockSeriesRange,
+  type MeasurementFilter,
+} from './repository.ts';
 
 export const MAX_FUTURE_MS = 5 * 60 * 1000;
+
+interface MeasurementRow {
+  id: number;
+  seriesId: number;
+  sensorId: number;
+  value: number;
+  timestamp: Date;
+}
+
+function toMeasurement(row: MeasurementRow): Measurement {
+  return { ...row, timestamp: row.timestamp.toISOString() };
+}
 
 export async function recordMeasurement(
   db: Db,
@@ -42,5 +59,13 @@ export async function recordMeasurement(
     });
   });
   if (!row) throw new Error('Insert Failed');
-  return { ...row, timestamp: row.timestamp.toISOString() };
+  return toMeasurement(row);
+}
+
+export async function getMeasurements(
+  db: Db,
+  filter: MeasurementFilter,
+): Promise<Measurement[]> {
+  const rows = await listMeasurements(db, filter);
+  return rows.map(toMeasurement);
 }
