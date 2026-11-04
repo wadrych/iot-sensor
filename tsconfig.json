@@ -4,6 +4,7 @@
     { "path": "apps/server" },
     { "path": "tools/generator" },
     { "path": "packages/shared" },
-    { "path": "apps/server/test" }
+    { "path": "apps/server/test" },
+    { "path": "tools/generator/test" }
   ]
 }
