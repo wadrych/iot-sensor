@@ -5,9 +5,10 @@
   "version": "1.0.0",
   "license": "MIT",
   "dependencies": {
+    "@iot-sensor/shared": "^1.0.0",
     "zod": "^4.6.7"
   },
   "scripts": {
-    "start": "node src/cli.ts"
+    "start": "node --conditions=source src/cli.ts"
   }
 }
